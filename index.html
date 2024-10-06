@@ -12,22 +12,29 @@
 
     <script src="index.js"></script>
     <script>
+        console.log("Script iniciado");
         document.getElementById('fileInput').addEventListener('change', function(e) {
+            console.log("Archivo seleccionado");
             const file = e.target.files[0];
             const reader = new FileReader();
 
             reader.onload = function(e) {
+                console.log("Archivo leído");
                 const arrayBuffer = e.target.result;
+                console.log("Creando objeto SEGYFile");
                 const segyFile = new segy.SEGYFile(arrayBuffer);
 
+                console.log("Obteniendo encabezado");
                 segyFile.getHeader().then(header => {
-                    console.log("Header:", header);
+                    console.log("Encabezado obtenido:", header);
+                    console.log("Obteniendo trazas");
                     return segyFile.getTraces();
                 }).then(traces => {
-                    console.log("Número de trazas:", traces.length);
+                    console.log("Trazas obtenidas. Número de trazas:", traces.length);
                     
                     // Visualizar la primera traza
                     const firstTrace = traces[0].data;
+                    console.log("Primera traza:", firstTrace);
                     const ctx = document.getElementById('segyChart').getContext('2d');
                     new Chart(ctx, {
                         type: 'line',
@@ -41,6 +48,7 @@
                             }]
                         }
                     });
+                    console.log("Gráfico creado");
                 }).catch(error => {
                     console.error("Error al procesar el archivo:", error);
                 });
