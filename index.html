@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SBP SEG-Y Viewer</title>
-    <script src="https://raw.githubusercontent.com/sanandak/segy-js/master/lib/segy.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
 </head>
 <body>
     <input type="file" id="fileInput" accept=".sgy,.segy">
     <canvas id="segyChart"></canvas>
 
+    <script src="index.js"></script>
     <script>
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -19,27 +20,29 @@
                 const arrayBuffer = e.target.result;
                 const segyFile = new segy.SEGYFile(arrayBuffer);
 
-                // Procesa los datos del archivo SEG-Y
-                segyFile.readHeader().then(() => {
-                    return segyFile.readTraces();
+                segyFile.getHeader().then(header => {
+                    console.log("Header:", header);
+                    return segyFile.getTraces();
                 }).then(traces => {
-                    // Aquí puedes procesar las trazas como necesites
-                    const data = traces.map(trace => trace.data[0]); // Ejemplo: tomar el primer valor de cada traza
-
-                    // Visualiza los datos usando Chart.js
+                    console.log("Número de trazas:", traces.length);
+                    
+                    // Visualizar la primera traza
+                    const firstTrace = traces[0].data;
                     const ctx = document.getElementById('segyChart').getContext('2d');
                     new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: Array.from({length: data.length}, (_, i) => i + 1),
+                            labels: Array.from({length: firstTrace.length}, (_, i) => i),
                             datasets: [{
-                                label: 'SEG-Y Data',
-                                data: data,
+                                label: 'Primera Traza',
+                                data: firstTrace,
                                 borderColor: 'rgb(75, 192, 192)',
                                 tension: 0.1
                             }]
                         }
                     });
+                }).catch(error => {
+                    console.error("Error al procesar el archivo:", error);
                 });
             };
 
