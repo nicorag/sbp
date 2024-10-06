@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SEG-Y Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/segy.js@1.0.4/dist/segy.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <input type="file" id="fileInput" accept=".sgy,.segy">
+    <canvas id="segyChart"></canvas>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const segyFile = new segy.SEGYFile(arrayBuffer);
+
+                // Procesa los datos del archivo SEG-Y
+                segyFile.readHeader().then(() => {
+                    return segyFile.readTraces();
+                }).then(traces => {
+                    // Aquí puedes procesar las trazas como necesites
+                    const data = traces.map(trace => trace.data[0]); // Ejemplo: tomar el primer valor de cada traza
+
+                    // Visualiza los datos usando Chart.js
+                    const ctx = document.getElementById('segyChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: Array.from({length: data.length}, (_, i) => i + 1),
+                            datasets: [{
+                                label: 'SEG-Y Data',
+                                data: data,
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1
+                            }]
+                        }
+                    });
+                });
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+    </script>
+</body>
+</html>
